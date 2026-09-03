@@ -345,8 +345,7 @@ export default function QuizEditor({ mode }) {
   const [loading, setLoading] = useState(mode === 'edit');
   const [notFound, setNotFound] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
-  const [metaSavedOnce, setMetaSavedOnce] = useState(mode === 'edit');
-  const [qModal, setQModal] = useState(null); // {mode:'add'} | {mode:'edit', question, index}
+  const [metaSavedOnce, setMetaSavedOnce] = useState(mode === 'edit');  const [qModal, setQModal] = useState(null); // {mode:'add'} | {mode:'edit', question, index}
   const [qBusy, setQBusy] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -369,6 +368,7 @@ export default function QuizEditor({ mode }) {
         if (!alive) return;
         setQuiz(meta.data ?? meta);
         setQuestions(full.questions);
+        setMetaSavedOnce(true);
       })
       .catch(() => alive && setNotFound(true))
       .finally(() => alive && setLoading(false));
