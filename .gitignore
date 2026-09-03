@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# builds
+client/dist/
+
+# environment
+.env
+.env.local
+
+# databases / local data
+server/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+mysql-data/
+
+# misc
+.DS_Store
+*.log
