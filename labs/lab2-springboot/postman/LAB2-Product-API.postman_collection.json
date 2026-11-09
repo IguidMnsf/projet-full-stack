@@ -1,0 +1,267 @@
+{
+  "info": {
+    "_postman_id": "ea68fcef-58fc-4ed1-84fa-9f213cb8cb02",
+    "name": "LAB2 - API Produits Spring Boot",
+    "description": "Collection de tests pour l'API Spring Boot locale. Démarrer le serveur avant exécution. Créer un produit en premier et supprimer-le en dernier.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "productId", "value": "1", "type": "string" },
+    { "key": "searchName", "value": "Ordinateur", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Créer un produit",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ordinateur Portable\",\n  \"description\": \"Laptop 15 pouces\",\n  \"price\": 1200.50,\n  \"quantity\": 10\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Création : statut 201\", function () { pm.response.to.have.status(201); });",
+              "const product = pm.response.json();",
+              "pm.test(\"Le produit créé contient un identifiant\", function () { pm.expect(product.id).to.exist; });",
+              "pm.environment.set(\"productId\", product.id);",
+              "pm.collectionVariables.set(\"productId\", product.id);",
+              "console.log(\"productId sauvegardé :\", product.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Lister les produits",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Liste : statut 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La réponse est un tableau JSON\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Rechercher un produit par nom",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/search?name={{searchName}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products", "search" ],
+          "query": [ { "key": "name", "value": "{{searchName}}" } ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Recherche : statut 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La recherche renvoie un tableau JSON\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Lire le produit créé",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products", "{{productId}}" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Lecture : statut 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"L'identifiant correspond au produit créé\", function () { pm.expect(pm.response.json().id.toString()).to.eql(pm.collectionVariables.get(\"productId\").toString()); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Modifier le produit (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Ordinateur Portable Pro\",\n  \"description\": \"Laptop 15 pouces amélioré\",\n  \"price\": 1300.00,\n  \"quantity\": 8\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products", "{{productId}}" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Modification : statut 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Le nom a été modifié\", function () { pm.expect(pm.response.json().name).to.eql(\"Ordinateur Portable Pro\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Refuser une quantité supérieure à 1000",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Stock invalide\",\n  \"description\": \"Exercice exception métier\",\n  \"price\": 1.00,\n  \"quantity\": 1001\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"La quantité supérieure à 1000 est rejetée avec 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Le message explique la limite\", function () { pm.expect(pm.response.json().message).to.include(\"1000\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Rejeter une entrée invalide",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \" \",\n  \"description\": \"Nom manquant\",\n  \"price\": -1,\n  \"quantity\": -1\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Les données invalides renvoient 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Les erreurs de champs sont détaillées\", function () { pm.expect(pm.response.json().fields).to.have.property(\"name\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Retourner 404 pour un identifiant inconnu",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/999999",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products", "999999" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Produit inconnu : statut 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"La réponse contient une erreur claire\", function () { pm.expect(pm.response.json().error).to.eql(\"Not Found\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Supprimer le produit créé (à lancer en dernier)",
+      "request": {
+        "method": "DELETE",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{productId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "products", "{{productId}}" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Suppression : statut 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
