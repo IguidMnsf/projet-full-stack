@@ -1,0 +1,564 @@
+{
+  "info": {
+    "_postman_id": "bd6452a7-ea16-42c1-bc60-16f0e2e8e7cb",
+    "name": "LAB1 - Gestion Produits REST",
+    "description": "TP1 : découverte de HTTP/REST, méthodes CRUD, paramètres, JSON, variables d'environnement, scripts de test et gestion des erreurs avec DummyJSON.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://dummyjson.com",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Lecture (GET)",
+      "item": [
+        {
+          "name": "1. Lister les 5 premiers produits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products?limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lecture d'une collection avec pagination. La réponse contient products, total, skip et limit."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La liste répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.test(\"La réponse contient une liste et des métadonnées\", function () {",
+                  "  pm.expect(data.products).to.be.an(\"array\");",
+                  "  pm.expect(data).to.have.property(\"total\");",
+                  "  pm.expect(data).to.have.property(\"limit\");",
+                  "});",
+                  "pm.test(\"Le temps de réponse est inférieur à 500 ms\", function () {",
+                  "  pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Lire un produit par identifiant",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "Lecture du produit dont l'identifiant est défini par la variable productId."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La lecture répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const product = pm.response.json();",
+                  "pm.test(\"Le produit possède un identifiant et un titre\", function () {",
+                  "  pm.expect(product).to.have.property(\"id\");",
+                  "  pm.expect(product.title).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Rechercher les produits contenant phone",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/search?q=phone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "phone"
+                }
+              ]
+            },
+            "description": "Exemple de query parameter ; la valeur peut être changée dans Params."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La recherche répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"La recherche renvoie un tableau products\", function () {",
+                  "  pm.expect(pm.response.json().products).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Filtrer la catégorie smartphones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/category/smartphones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "category",
+                "smartphones"
+              ]
+            },
+            "description": "Exercice d'application : récupérer les produits d'une catégorie."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Le filtre répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"La réponse contient un tableau products\", function () {",
+                  "  pm.expect(pm.response.json().products).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Création (POST)",
+      "item": [
+        {
+          "name": "1. Ajouter un nouveau produit (Étapes 6 et 10)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Casque Audio Sans Fil\",\n  \"price\": 129.99,\n  \"category\": \"audio\",\n  \"stock\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "add"
+              ]
+            },
+            "description": "Création simulée. Le script accepte 200 ou 201, vérifie les champs et enregistre l'id dans createdProductId."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La création répond avec HTTP 200 ou 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const product = pm.response.json();",
+                  "pm.test(\"La réponse contient un identifiant\", function () {",
+                  "  pm.expect(product.id).to.exist;",
+                  "});",
+                  "pm.test(\"Les données renvoyées correspondent au produit envoyé\", function () {",
+                  "  pm.expect(product.title).to.eql(\"Casque Audio Sans Fil\");",
+                  "  pm.expect(product.price).to.eql(129.99);",
+                  "});",
+                  "pm.environment.set(\"createdProductId\", product.id);",
+                  "console.log(\"ID du produit simulé :\", product.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Ajouter un nouvel utilisateur (Exercice étape 12)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Amine\",\n  \"lastName\": \"Exemple\",\n  \"age\": 22\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "add"
+              ]
+            },
+            "description": "Ajout d'utilisateur simulé pour l'exercice. DummyJSON ne conserve pas durablement cette ressource."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"La création utilisateur répond avec HTTP 200 ou 201\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const user = pm.response.json();",
+                  "pm.test(\"La réponse contient l'utilisateur créé\", function () {",
+                  "  pm.expect(user.id).to.exist;",
+                  "  pm.expect(user.firstName).to.eql(\"Amine\");",
+                  "  pm.expect(user.lastName).to.eql(\"Exemple\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Modification (PUT/PATCH)",
+      "item": [
+        {
+          "name": "1. Remplacer complètement un produit (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Casque Audio Pro (Mise à jour)\",\n  \"price\": 149.99,\n  \"category\": \"audio\",\n  \"stock\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "PUT représente le remplacement complet de la ressource (selon la sémantique HTTP). Opération simulée par DummyJSON."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PUT répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"PUT renvoie les valeurs mises à jour\", function () {",
+                  "  const product = pm.response.json();",
+                  "  pm.expect(product.title).to.eql(\"Casque Audio Pro (Mise à jour)\");",
+                  "  pm.expect(product.price).to.eql(149.99);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Modifier uniquement le prix (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 139.99\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "PATCH envoie uniquement le champ à modifier. Opération simulée par DummyJSON."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PATCH répond avec HTTP 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"PATCH renvoie le prix modifié\", function () {",
+                  "  pm.expect(pm.response.json().price).to.eql(139.99);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Suppression (DELETE)",
+      "item": [
+        {
+          "name": "1. Supprimer un produit (simulation)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "DummyJSON renvoie un objet de suppression simulée ; l'opération ne supprime pas durablement le produit."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"DELETE répond avec HTTP 200 ou 204\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "if (pm.response.code !== 204) {",
+                  "  pm.test(\"La réponse confirme la suppression simulée\", function () {",
+                  "    pm.expect(pm.response.json().isDeleted).to.eql(true);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Erreurs et validation",
+      "item": [
+        {
+          "name": "1. Ressource inexistante (404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "99999"
+              ]
+            },
+            "description": "Vérifie le cas d'une ressource absente."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Une ressource inexistante répond avec HTTP 404\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Corps JSON mal formé (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "add"
+              ]
+            },
+            "description": "Corps volontairement invalide pour vérifier la réponse du serveur."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Un JSON mal formé est rejeté avec HTTP 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
