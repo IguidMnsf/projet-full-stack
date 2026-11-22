@@ -8,6 +8,11 @@ levels. Built with **React (Vite)**, **Node.js/Express**, **MySQL**, and an **AI
 
 ---
 
+## Backend labs
+
+The standalone TP1, LAB2, and LAB5 coursework projects are maintained in the
+[backend-labs repository](https://github.com/IguidMnsf/backend-labs).
+
 ## ✨ Features
 
 | Area | Details |
